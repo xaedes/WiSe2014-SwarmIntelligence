@@ -45,24 +45,27 @@ to go
 end
 
 to-report func [i j]
+  ; i and j are turtles
   if (interaction-func = "linear")      [ report func-linear i j]
   if (interaction-func = "repulsion-1") [ report func-repulsion-1 i j]
+  if (interaction-func = "repulsion-2") [ report func-repulsion-2 i j]
 end
 
 to-report func-linear [i j]
-  ; i and j are turtles
   let diff pos-diff-of i j
   report vector-smul diff (- k) 
 end
 
 
 to-report func-repulsion-1 [i j]
-  ; i and j are turtles
   let diff pos-diff-of i j
   report vector-smul diff ((- k) * (vector-len diff - d))
 end
   
-
+to-report func-repulsion-2 [i j]
+  let diff pos-diff-of i j
+  report vector-smul diff ifelse-value (r != 0) [k * exp ((-0.5 * ((vector-len diff - d) ^ 2)) / (r ^ 2))] [0]
+end
 
 to-report vector-add [v1 v2]
   report (map + v1 v2)
@@ -137,7 +140,7 @@ population
 population
 0
 100
-34
+22
 1
 1
 NIL
@@ -193,10 +196,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-17
-173
-189
-206
+20
+172
+192
+205
 friction
 friction
 0.
@@ -208,10 +211,10 @@ NIL
 HORIZONTAL
 
 SLIDER
-19
-216
-191
-249
+21
+267
+193
+300
 k
 k
 0
@@ -223,50 +226,50 @@ NIL
 HORIZONTAL
 
 SLIDER
-17
-263
-189
-296
+22
+313
+194
+346
 d
 d
 0
 100
-12.1
+4.46
 0.01
 1
 NIL
 HORIZONTAL
 
 SLIDER
-16
-311
-188
-344
+23
+362
+195
+395
 delta
 delta
 0
 100
-26.8
+100
 0.1
 1
 NIL
 HORIZONTAL
 
 CHOOSER
-17
-355
-156
-400
+20
+213
+159
+258
 interaction-func
 interaction-func
-"linear" "repulsion-1"
-1
+"linear" "repulsion-1" "repulsion-2"
+2
 
 TEXTBOX
-195
-312
-345
-342
+200
+361
+350
+391
 maximum distance for any interaction
 12
 0.0
@@ -283,21 +286,46 @@ per tick
 1
 
 TEXTBOX
-198
-224
-348
-242
+200
+275
+350
+293
 strength of attraction
 12
 0.0
 1
 
 TEXTBOX
-197
-262
-347
-292
+199
+313
+349
+343
 distance parameter for function
+12
+0.0
+1
+
+SLIDER
+24
+406
+196
+439
+r
+r
+0
+100
+0
+0.5
+1
+NIL
+HORIZONTAL
+
+TEXTBOX
+202
+401
+352
+446
+region size around the agent from which it will repel its neighbors
 12
 0.0
 1
