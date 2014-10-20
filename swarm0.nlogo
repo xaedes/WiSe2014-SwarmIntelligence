@@ -20,15 +20,15 @@ end
 to go
   ask turtles [
     ; calculate x(t+1)
-    let nx xcor + vx * global-speed * dt
-    let ny ycor + vy * global-speed * dt
+    let nx xcor + vx * global-speed
+    let ny ycor + vy * global-speed
     
     ; update position and direction
     facexy nx ny
     setxy nx ny
     
     let others [self] of other turtles in-radius delta
-    let f vectors-sum map [func-repulsion-1 self ?] others
+    let f vectors-sum map [func self ?] others
     set fx first f
     set fy last f
 
@@ -43,6 +43,25 @@ to go
   ]
   tick
 end
+
+to-report func [i j]
+  if (interaction-func = "linear")      [ report func-linear i j]
+  if (interaction-func = "repulsion-1") [ report func-repulsion-1 i j]
+end
+
+to-report func-linear [i j]
+  ; i and j are turtles
+  let diff pos-diff-of i j
+  report vector-smul diff (- k) 
+end
+
+
+to-report func-repulsion-1 [i j]
+  ; i and j are turtles
+  let diff pos-diff-of i j
+  report vector-smul diff ((- k) * (vector-len diff - d))
+end
+  
 
 
 to-report vector-add [v1 v2]
@@ -80,17 +99,12 @@ to-report vectors-sum [vs]
          [list 0 0]
 end
 
-to-report func-repulsion-1 [i j]
-  ; i and j are turtles
-  let diff pos-diff-of i j
-  report vector-smul diff ((- k) * (vector-len diff - d))
-end
-  
+
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+432
 10
-649
+871
 470
 16
 16
@@ -123,7 +137,7 @@ population
 population
 0
 100
-21
+34
 1
 1
 NIL
@@ -171,9 +185,9 @@ SLIDER
 global-speed
 global-speed
 0
-2.
-0.01
-0.01
+0.05
+0.005
+0.001
 1
 NIL
 HORIZONTAL
@@ -187,37 +201,37 @@ friction
 friction
 0.
 1.
-0.73
+0.95
 0.01
 1
 NIL
 HORIZONTAL
 
 SLIDER
-18
-209
-190
-242
-dt
-dt
-0
-1
-1
-0.01
-1
-NIL
-HORIZONTAL
-
-SLIDER
-16
-252
-188
-285
+19
+216
+191
+249
 k
 k
 0
 2
-0.14
+0.1
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+17
+263
+189
+296
+d
+d
+0
+100
+12.1
 0.01
 1
 NIL
@@ -225,33 +239,68 @@ HORIZONTAL
 
 SLIDER
 16
-306
+311
 188
-339
-d
-d
-0
-100
-16.56
-0.01
-1
-NIL
-HORIZONTAL
-
-SLIDER
-15
-354
-187
-387
+344
 delta
 delta
 0
 100
-72
+26.8
 0.1
 1
 NIL
 HORIZONTAL
+
+CHOOSER
+17
+355
+156
+400
+interaction-func
+interaction-func
+"linear" "repulsion-1"
+1
+
+TEXTBOX
+195
+312
+345
+342
+maximum distance for any interaction
+12
+0.0
+1
+
+TEXTBOX
+195
+180
+345
+198
+per tick
+12
+0.0
+1
+
+TEXTBOX
+198
+224
+348
+242
+strength of attraction
+12
+0.0
+1
+
+TEXTBOX
+197
+262
+347
+292
+distance parameter for function
+12
+0.0
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
