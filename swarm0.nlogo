@@ -1,24 +1,40 @@
-turtles-own [
+breed [particles particle] ;; name for our agents
+
+particles-own [
   vx
   vy
   fx
   fy
 ]
 
+breed [markers marker]
+markers-own [
+ purpose 
+]
+
 to setup
   clear-all
-  crt population [
+  set-default-shape markers "x"
+  create-particles population [
     set color yellow - 2 + random 7  ;; random shades look nice
     set size 1.5  ;; easier to see
     setxy random-xcor random-ycor
     set vx (random-float 1) - 0.5
     set vy (random-float 1) - 0.5
   ]
+  
+  
+  create-markers 1 [
+    let center center-of particles
+    setxy (first center) (last center)
+    set purpose "center"
+    set color yellow
+  ]
   reset-ticks
 end
 
 to go
-  ask turtles [
+  ask particles [
     ; calculate x(t+1)
     let nx xcor + vx * global-speed
     let ny ycor + vy * global-speed
@@ -27,7 +43,8 @@ to go
     facexy nx ny
     setxy nx ny
     
-    let others [self] of other turtles in-radius delta
+    ; calculate f
+    let others [self] of other particles in-radius delta
     let f vectors-sum map [func self ?] others
     set fx first f
     set fy last f
@@ -41,9 +58,26 @@ to go
     set vx nvx
     set vy nvy
   ]
+
+  
+  ask markers with (purpose = "center") [
+    let center center-of particles
+    setxy (first center) (last center)
+  ]
   tick
 end
 
+to update-center-marker
+end
+
+to-report center-of [agents]
+  report vector-smul (vectors-sum ([pos-of self] of agents)) 
+                     (1 / count agents)
+end
+
+
+
+;--Swarm Behaviour Functions------------------------------------------------------------------------------------------
 to-report func [i j]
   ; i and j are turtles
   if (interaction-func = "linear")      [ report func-linear i j]
@@ -66,6 +100,8 @@ to-report func-repulsion-2 [i j]
   let diff pos-diff-of i j
   report vector-smul diff ifelse-value (r != 0) [k * exp ((-0.5 * ((vector-len diff - d) ^ 2)) / (r ^ 2))] [0]
 end
+
+;--Vector Functions---------------------------------------------------------------------------------------------------
 
 to-report vector-add [v1 v2]
   report (map + v1 v2)
@@ -101,7 +137,6 @@ to-report vectors-sum [vs]
          [reduce vector-add vs]
          [list 0 0]
 end
-
 
 @#$#@#$#@
 GRAPHICS-WINDOW
@@ -140,7 +175,7 @@ population
 population
 0
 100
-22
+96
 1
 1
 NIL
@@ -189,7 +224,7 @@ global-speed
 global-speed
 0
 0.05
-0.005
+0.0050
 0.001
 1
 NIL
@@ -204,7 +239,7 @@ friction
 friction
 0.
 1.
-0.95
+0.6
 0.01
 1
 NIL
@@ -219,7 +254,7 @@ k
 k
 0
 2
-0.1
+0.27
 0.01
 1
 NIL
@@ -234,7 +269,7 @@ d
 d
 0
 100
-4.46
+8.28
 0.01
 1
 NIL
@@ -249,7 +284,7 @@ delta
 delta
 0
 100
-100
+58
 0.1
 1
 NIL
@@ -263,7 +298,7 @@ CHOOSER
 interaction-func
 interaction-func
 "linear" "repulsion-1" "repulsion-2"
-2
+1
 
 TEXTBOX
 200
@@ -314,7 +349,7 @@ r
 r
 0
 100
-0
+5
 0.5
 1
 NIL
