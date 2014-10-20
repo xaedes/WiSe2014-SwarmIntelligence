@@ -1,5 +1,4 @@
 breed [particles particle] ;; name for our agents
-
 particles-own [
   vx
   vy
@@ -14,26 +13,39 @@ markers-own [
 
 to setup
   clear-all
+  
+  add-particles population
+    
   set-default-shape markers "x"
-  create-particles population [
-    set color yellow - 2 + random 7  ;; random shades look nice
-    set size 1.5  ;; easier to see
-    setxy random-xcor random-ycor
-    set vx (random-float 1) - 0.5
-    set vy (random-float 1) - 0.5
-  ]
-  
-  
   create-markers 1 [
     let center center-of particles
     setxy (first center) (last center)
     set purpose "center"
     set color yellow
   ]
+  
   reset-ticks
 end
 
+to add-particles [n]
+  create-particles n [
+    set color yellow - 2 + random 7  ;; random shades look nice
+    set size 1.5  ;; easier to see
+    setxy random-xcor random-ycor
+    set vx (random-float 1) - 0.5
+    set vy (random-float 1) - 0.5
+  ]
+end
+
 to go
+  if count particles < population [
+    add-particles (population - count particles)
+  ] 
+  if count particles > population [
+    ask n-of (count particles - population) particles [
+      die
+    ]
+  ]
   ask particles [
     ; calculate x(t+1)
     let nx xcor + vx * global-speed
@@ -60,22 +72,45 @@ to go
   ]
 
   
-  ask markers with (purpose = "center") [
+  ask (markers with [purpose = "center"]) [
     let center center-of particles
     setxy (first center) (last center)
   ]
   tick
 end
 
-to update-center-marker
-end
 
 to-report center-of [agents]
   report vector-smul (vectors-sum ([pos-of self] of agents)) 
                      (1 / count agents)
 end
 
+to-report average-distance-to-center-of [agents]
+  let center center-of agents
+  report (sum [vector-len (vector-sub (pos-of self) center)] of agents) / count agents
+end
 
+to-report average-distance-to-each-other-of [agents]
+  let n count particles
+  let particle_list [self] of particles
+
+  report (1 / (n ^ 2 - n)) * (sum (map [vector-len pos-diff-of (item 0 ?) (item 1 ?)] (combinations (list particle_list particle_list))))
+end
+
+;https://groups.yahoo.com/neo/groups/netlogo-users/conversations/topics/10032
+to-report flatten [lists]
+  report reduce [sentence ?1 ?2] lists
+end
+
+to-report map/fput [x lists]
+  report map [fput x ?] lists
+end
+to-report combinations [lists]
+  ifelse empty? lists
+  [ report [[]] ]
+  [ let result combinations butfirst lists
+    report flatten map [map/fput ? result] first lists ]
+end
 
 ;--Swarm Behaviour Functions------------------------------------------------------------------------------------------
 to-report func [i j]
@@ -175,7 +210,7 @@ population
 population
 0
 100
-96
+27
 1
 1
 NIL
@@ -239,7 +274,7 @@ friction
 friction
 0.
 1.
-0.6
+0.7
 0.01
 1
 NIL
@@ -254,7 +289,7 @@ k
 k
 0
 2
-0.27
+0.41
 0.01
 1
 NIL
@@ -269,7 +304,7 @@ d
 d
 0
 100
-8.28
+8.92
 0.01
 1
 NIL
@@ -284,7 +319,7 @@ delta
 delta
 0
 100
-58
+100
 0.1
 1
 NIL
@@ -349,7 +384,7 @@ r
 r
 0
 100
-5
+9.5
 0.5
 1
 NIL
@@ -364,6 +399,42 @@ region size around the agent from which it will repel its neighbors
 12
 0.0
 1
+
+PLOT
+23
+458
+408
+735
+average-distance-to-center-of particles
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot average-distance-to-center-of particles"
+
+PLOT
+920
+13
+1451
+379
+average-distance-to-each-other-of particles
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot average-distance-to-each-other-of particles"
 
 @#$#@#$#@
 ## WHAT IS IT?
