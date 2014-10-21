@@ -48,10 +48,20 @@ to go
       die
     ]
   ]
+  
   ask particles [
     ; calculate f
-    let others [self] of other particles in-radius delta
-    let f vectors-sum map [func self ?] others
+    let me self
+    let f-swarm-interaction vectors-sum [func interaction-func k-i d-i r-i me self] of other particles in-radius delta-i
+
+    let f (list f-swarm-interaction)
+    let mouse list mouse-xcor mouse-ycor
+    if (mouse-interaction? and vector-len torus-relative-pos-of me mouse <= delta-m) [
+      let f-mouse-interaction (func mouse-func k-m d-m r-m me mouse)
+      set f fput f-mouse-interaction f
+    ]
+    set f vectors-sum f
+
     set fx first f
     set fy last f
 
@@ -77,6 +87,35 @@ to go
   tick
 end
 
+
+;--Swarm Behaviour Functions------------------------------------------------------------------------------------------
+to-report func [chosen-func k d r i j]
+  ; i and j are turtles
+  if (chosen-func = "linear")      [ report func-linear k i j]
+  if (chosen-func = "repulsion-1") [ report func-repulsion-1 k d i j]
+  if (chosen-func = "repulsion-2") [ report func-repulsion-2 k d r i j]
+  if (chosen-func = "sin")         [ report func-sin k d i j]
+end
+
+to-report func-linear [k i j]
+  let diff torus-relative-pos-of i j
+  report vector-smul diff (- k) 
+end
+
+to-report func-repulsion-1 [k d i j]
+  let diff torus-relative-pos-of i j
+  report vector-smul diff ((- k) * (vector-len diff - d))
+end
+  
+to-report func-repulsion-2 [k d r i j]
+  let diff torus-relative-pos-of i j
+  report vector-smul diff ifelse-value (r != 0) [k * exp ((-0.5 * ((vector-len diff - d) ^ 2)) / (r ^ 2))] [0]
+end
+
+to-report func-sin [k d i j]
+  let diff torus-relative-pos-of i j
+  report vector-smul diff ifelse-value (d != 0) [((k) * abs(cos(pi * vector-len diff / d)))] [0]
+end
 ;--Visual Marker-----------------------------------------------------------------------------------------------------
 to update-center-marker
   ask (markers with [purpose = "center"]) [
@@ -113,37 +152,6 @@ to-report average-distance-to-each-other-of [agents]
 
   report ifelse-value ((n ^ 2 - n) != 0) [(1 / (n ^ 2 - n)) * (sum (map [vector-len torus-relative-pos-of (item 0 ?) (item 1 ?)] (combinations (list particle_list particle_list))))][0]
 end
-
-;--Swarm Behaviour Functions------------------------------------------------------------------------------------------
-to-report func [i j]
-  ; i and j are turtles
-  if (interaction-func = "linear")      [ report func-linear i j]
-  if (interaction-func = "repulsion-1") [ report func-repulsion-1 i j]
-  if (interaction-func = "repulsion-2") [ report func-repulsion-2 i j]
-  if (interaction-func = "sin")         [ report func-sin i j]
-end
-
-to-report func-linear [i j]
-  let diff torus-relative-pos-of i j
-  report vector-smul diff (- k) 
-end
-
-
-to-report func-repulsion-1 [i j]
-  let diff torus-relative-pos-of i j
-  report vector-smul diff ((- k) * (vector-len diff - d))
-end
-  
-to-report func-repulsion-2 [i j]
-  let diff torus-relative-pos-of i j
-  report vector-smul diff ifelse-value (r != 0) [k * exp ((-0.5 * ((vector-len diff - d) ^ 2)) / (r ^ 2))] [0]
-end
-
-to-report func-sin [i j]
-  let diff torus-relative-pos-of i j
-  report vector-smul diff ifelse-value (d != 0) [((k) * abs(cos(pi * vector-len diff / d)))] [0]
-end
-
 ;--Combinations------------------------------------------------------------------------------------------------------
 ;https://groups.yahoo.com/neo/groups/netlogo-users/conversations/topics/10032
 to-report flatten [lists]
@@ -162,7 +170,7 @@ end
 
 ;--Torus Geometrical Functions----------------------------------------------------------------------------------------
 to-report pos-of [a]
-  report [list xcor ycor] of a
+  report ifelse-value (is-list? a) [a] [[list xcor ycor] of a]
 end
 
 to-report wrap-correct [v]
@@ -244,7 +252,7 @@ population
 population
 0
 500
-19
+64
 1
 1
 NIL
@@ -308,7 +316,7 @@ friction
 friction
 0.
 1.
-0.95
+0.9
 0.01
 1
 NIL
@@ -319,11 +327,11 @@ SLIDER
 267
 193
 300
-k
-k
+k-i
+k-i
 -2
 2
-0.02
+0
 0.01
 1
 NIL
@@ -334,11 +342,11 @@ SLIDER
 313
 194
 346
-d
-d
+d-i
+d-i
 0
 100
-4.46
+8.92
 0.01
 1
 NIL
@@ -349,8 +357,8 @@ SLIDER
 362
 195
 395
-delta
-delta
+delta-i
+delta-i
 0
 32
 32
@@ -414,8 +422,8 @@ SLIDER
 406
 196
 439
-r
-r
+r-i
+r-i
 0
 100
 49.5
@@ -435,10 +443,10 @@ region size around the agent from which it will repel its neighbors
 1
 
 PLOT
-23
-458
-408
-735
+911
+393
+1296
+670
 average-distance-to-center-of particles
 NIL
 NIL
@@ -469,6 +477,7 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot average-distance-to-each-other-of particles"
+"pen-1" 1.0 0 -7500403 true "" "plot d"
 
 SLIDER
 200
@@ -481,6 +490,87 @@ random-fluctuation
 2
 0
 0.01
+1
+NIL
+HORIZONTAL
+
+SWITCH
+26
+453
+187
+486
+mouse-interaction?
+mouse-interaction?
+0
+1
+-1000
+
+CHOOSER
+193
+455
+331
+500
+mouse-func
+mouse-func
+"linear" "repulsion-1" "repulsion-2" "sin"
+1
+
+SLIDER
+23
+508
+195
+541
+k-m
+k-m
+-2
+2
+0.11
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+23
+544
+195
+577
+d-m
+d-m
+0
+100
+8.92
+0.01
+1
+NIL
+HORIZONTAL
+
+SLIDER
+23
+580
+195
+613
+delta-m
+delta-m
+0
+32
+32
+0.1
+1
+NIL
+HORIZONTAL
+
+SLIDER
+23
+615
+195
+648
+r-m
+r-m
+0
+100
+49.5
+0.5
 1
 NIL
 HORIZONTAL
