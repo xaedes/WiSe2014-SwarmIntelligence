@@ -27,7 +27,7 @@ to setup
   
   create-markers 1 [
     set hidden? true
-    setxy mouse-xcor mouse-ycor
+    setxy 0 0
     set purpose "mouse"
     set color red
   ]
@@ -161,9 +161,12 @@ to-report center-of [agents]
 end
 
 
+to-report average-distance [agents pos]
+  report ifelse-value (count agents != 0)[(sum [vector-len (torus-relative-pos (list xcor ycor) pos)] of agents) / count agents] [0]
+end
+
 to-report average-distance-to-center-of [agents]
-  let center center-of agents
-  report ifelse-value (count agents != 0)[(sum [vector-len (torus-relative-pos (list xcor ycor) center)] of agents) / count agents] [0]
+  report average-distance agents center-of agents
 end
 
 to-report average-distance-to-each-other-of [agents]
@@ -272,7 +275,7 @@ population
 population
 0
 500
-64
+19
 1
 1
 NIL
@@ -351,7 +354,7 @@ k-i
 k-i
 -2
 2
-0
+0.06
 0.01
 1
 NIL
@@ -366,7 +369,7 @@ d-i
 d-i
 0
 100
-8.92
+5.1
 0.01
 1
 NIL
@@ -463,10 +466,10 @@ region size around the agent from which it will repel its neighbors
 1
 
 PLOT
-911
-393
-1296
-670
+883
+231
+1298
+456
 average-distance-to-center-of particles
 NIL
 NIL
@@ -479,12 +482,13 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot average-distance-to-center-of particles"
+"pen-1" 1.0 0 -7500403 true "" "plot d-i"
 
 PLOT
 882
 13
-1413
-379
+1296
+229
 average-distance-to-each-other-of particles
 NIL
 NIL
@@ -497,7 +501,7 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot average-distance-to-each-other-of particles"
-"pen-1" 1.0 0 -7500403 true "" "plot d"
+"pen-1" 1.0 0 -7500403 true "" "plot d-i"
 
 SLIDER
 200
@@ -507,8 +511,8 @@ SLIDER
 random-fluctuation
 random-fluctuation
 0
-2
-0
+5
+0.01
 0.01
 1
 NIL
@@ -533,7 +537,7 @@ CHOOSER
 mouse-func
 mouse-func
 "linear" "repulsion-1" "repulsion-2" "sin"
-1
+2
 
 SLIDER
 23
@@ -544,7 +548,7 @@ k-m
 k-m
 -2
 2
-0.11
+-0.07
 0.01
 1
 NIL
@@ -558,8 +562,8 @@ SLIDER
 d-m
 d-m
 0
-100
-8.92
+32
+2.85
 0.01
 1
 NIL
@@ -589,11 +593,29 @@ r-m
 r-m
 0
 100
-49.5
+6.5
 0.5
 1
 NIL
 HORIZONTAL
+
+PLOT
+883
+460
+1298
+690
+average-distance to mouse marker
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot average-distance particles (pos-of one-of markers with [purpose = \"mouse\"])"
 
 @#$#@#$#@
 ## WHAT IS IT?
