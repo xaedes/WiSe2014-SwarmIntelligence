@@ -71,25 +71,27 @@ to go
     setxy nx ny
   ]
 
-  
+  update-center-marker
+  tick
+end
+
+to update-center-marker
   ask (markers with [purpose = "center"]) [
     let center center-of particles
     setxy (first center) (last center)
   ]
-  tick
 end
-
 
 to-report center-of [agents]
   report ifelse-value (count agents != 0)
-    [vector-smul (vectors-sum ([pos-of self] of agents)) 
+    [vector-smul (vectors-sum ([pos-of self] of agents))
       (1 / count agents)]
     [list 0 0]
 end
 
 to-report average-distance-to-center-of [agents]
   let center center-of agents
-  report ifelse-value (count agents != 0)[(sum [vector-len (vector-sub (pos-of self) center)] of agents) / count agents] [0]
+  report ifelse-value (count agents != 0)[(sum [vector-len (torus-distance (list xcor ycor) center)] of agents) / count agents] [0]
 end
 
 to-report average-distance-to-each-other-of [agents]
@@ -166,8 +168,13 @@ to-report pos-of [a]
   report list ([xcor] of a) ([ycor] of a)
 end
 
+to-report torus-distance [p1 p2]
+;  let world-size list world-width world-height
+  report vector-sub p1 p2
+end
+
 to-report pos-diff-of [a1 a2]
-  report vector-sub (pos-of a1) (pos-of a2)
+  report torus-distance (pos-of a1) (pos-of a2)
 end
 
 to-report vector-len [v]
@@ -217,7 +224,7 @@ population
 population
 0
 500
-2
+10
 1
 1
 NIL
@@ -311,7 +318,7 @@ d
 d
 0
 100
-0.01
+4.46
 0.01
 1
 NIL
@@ -340,7 +347,7 @@ CHOOSER
 interaction-func
 interaction-func
 "linear" "repulsion-1" "repulsion-2" "sin"
-2
+1
 
 TEXTBOX
 200
@@ -452,7 +459,7 @@ random-fluctuation
 random-fluctuation
 0
 2
-0.01
+0
 0.01
 1
 NIL
