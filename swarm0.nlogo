@@ -1,3 +1,4 @@
+;--Setup---------------------------------------------------------------------------------------------------
 breed [particles particle] ;; name for our agents
 particles-own [
   vx
@@ -37,6 +38,7 @@ to add-particles [n]
   ]
 end
 
+;--Swarm Behaviour------------------------------------------------------------------------------------------
 to go
   if count particles < population [
     add-particles (population - count particles)
@@ -75,6 +77,7 @@ to go
   tick
 end
 
+;--Visual Marker-----------------------------------------------------------------------------------------------------
 to update-center-marker
   ask (markers with [purpose = "center"]) [
     let center center-of particles
@@ -82,6 +85,7 @@ to update-center-marker
   ]
 end
 
+;--Swarm Statistics---------------------------------------------------------------------------------------------------
 to-report center-of [agents]
   report ifelse-value (count agents != 0)
     [vector-smul (vectors-sum ([pos-of self] of agents))
@@ -99,21 +103,6 @@ to-report average-distance-to-each-other-of [agents]
   let particle_list [self] of particles
 
   report ifelse-value ((n ^ 2 - n) != 0) [(1 / (n ^ 2 - n)) * (sum (map [vector-len pos-diff-of (item 0 ?) (item 1 ?)] (combinations (list particle_list particle_list))))][0]
-end
-
-;https://groups.yahoo.com/neo/groups/netlogo-users/conversations/topics/10032
-to-report flatten [lists]
-  report reduce [sentence ?1 ?2] lists
-end
-
-to-report map/fput [x lists]
-  report map [fput x ?] lists
-end
-to-report combinations [lists]
-  ifelse empty? lists
-  [ report [[]] ]
-  [ let result combinations butfirst lists
-    report flatten map [map/fput ? result] first lists ]
 end
 
 ;--Swarm Behaviour Functions------------------------------------------------------------------------------------------
@@ -146,6 +135,36 @@ to-report func-sin [i j]
   report vector-smul diff ifelse-value (d != 0) [((k) * abs(cos(pi * vector-len diff / d)))] [0]
 end
 
+;--Combinations------------------------------------------------------------------------------------------------------
+;https://groups.yahoo.com/neo/groups/netlogo-users/conversations/topics/10032
+to-report flatten [lists]
+  report reduce [sentence ?1 ?2] lists
+end
+
+to-report map/fput [x lists]
+  report map [fput x ?] lists
+end
+to-report combinations [lists]
+  ifelse empty? lists
+  [ report [[]] ]
+  [ let result combinations butfirst lists
+    report flatten map [map/fput ? result] first lists ]
+end
+
+;--Torus Geometrical Functions----------------------------------------------------------------------------------------
+to-report pos-of [a]
+  report list ([xcor] of a) ([ycor] of a)
+end
+
+to-report torus-distance [p1 p2]
+;  let world-size list world-width world-height
+  report vector-sub p1 p2
+end
+
+to-report pos-diff-of [a1 a2]
+  report torus-distance (pos-of a1) (pos-of a2)
+end
+
 ;--Vector Functions---------------------------------------------------------------------------------------------------
 
 to-report vector-add [v1 v2]
@@ -162,19 +181,6 @@ end
 
 to-report vector-sadd [v s]
   report (map [? + s] v)
-end
-
-to-report pos-of [a]
-  report list ([xcor] of a) ([ycor] of a)
-end
-
-to-report torus-distance [p1 p2]
-;  let world-size list world-width world-height
-  report vector-sub p1 p2
-end
-
-to-report pos-diff-of [a1 a2]
-  report torus-distance (pos-of a1) (pos-of a2)
 end
 
 to-report vector-len [v]
@@ -224,7 +230,7 @@ population
 population
 0
 500
-10
+19
 1
 1
 NIL
@@ -288,7 +294,7 @@ friction
 friction
 0.
 1.
-0.7
+0.95
 0.01
 1
 NIL
