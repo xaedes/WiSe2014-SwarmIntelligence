@@ -153,11 +153,18 @@ to-report unwrapped-positions-of [agents]
   report [unwrap-position pivot self] of agents
 end
 
+;to-report center-of [agents]
+;  let ps unwrapped-positions-of agents
+;  report ifelse-value (count agents != 0)
+;    [vector-smul (vectors-sum ps) (1 / count agents)]
+;    [list 0 0]
+;end
+
 to-report center-of [agents]
-  let ps unwrapped-positions-of agents
-  report ifelse-value (count agents != 0)
-    [vector-smul (vectors-sum ps) (1 / count agents)]
-    [list 0 0]
+  let ps [pos-of self] of agents
+  let xs [xcor] of agents
+  let ys [ycor] of agents
+  report list (circular-mean-xcor xs) (circular-mean-ycor ys)
 end
 
 
@@ -209,6 +216,32 @@ end
 
 to-report torus-relative-pos-of [a1 a2]
   report torus-relative-pos (pos-of a1) (pos-of a2)
+end
+
+; http://stackoverflow.com/a/24829846/798588
+;; lower and upper should be equivalent on the circle, but upper > lower in the reals
+;; For circles, lower = 0 and upper = 360.
+;; For clocks, lower = 0 and upper = 12 (or 24)
+;; For x-coordinates, lower = min-pxcor - .5 and upper = max-pxcor + .5
+to-report circular-mean [ lower upper vals ]
+  if (length vals = 0) [ report 0 ]
+  let width upper - lower
+  let angles map [ 360 * (? - lower) / width ] vals
+  let mean-x mean map [ cos ? ] angles
+  let mean-y mean map [ sin ? ] angles
+  
+  ; not doing turtle headings here, so we flip atan's arguments
+  report ifelse-value ((mean-x = 0) and (mean-y = 0))
+           [mean vals]
+           [width * (atan mean-y mean-x) / 360 + lower]
+end
+
+to-report circular-mean-xcor [ xs ]
+  report (circular-mean (min-pxcor - .5) (max-pxcor + .5) xs)
+end
+
+to-report circular-mean-ycor [ ys ]
+  report (circular-mean (min-pycor - .5) (max-pycor + .5) ys)
 end
 
 ;--Vector Functions---------------------------------------------------------------------------------------------------
