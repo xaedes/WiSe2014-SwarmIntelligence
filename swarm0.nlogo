@@ -81,13 +81,15 @@ end
 
 
 to-report center-of [agents]
-  report vector-smul (vectors-sum ([pos-of self] of agents)) 
-                     (1 / count agents)
+  report ifelse-value (count agents != 0)
+    [vector-smul (vectors-sum ([pos-of self] of agents)) 
+      (1 / count agents)]
+    [list 0 0]
 end
 
 to-report average-distance-to-center-of [agents]
   let center center-of agents
-  report (sum [vector-len (vector-sub (pos-of self) center)] of agents) / count agents
+  report ifelse-value (count agents != 0)[(sum [vector-len (vector-sub (pos-of self) center)] of agents) / count agents] [0]
 end
 
 to-report average-distance-to-each-other-of [agents]
@@ -118,6 +120,7 @@ to-report func [i j]
   if (interaction-func = "linear")      [ report func-linear i j]
   if (interaction-func = "repulsion-1") [ report func-repulsion-1 i j]
   if (interaction-func = "repulsion-2") [ report func-repulsion-2 i j]
+  if (interaction-func = "sin")         [ report func-sin i j]
 end
 
 to-report func-linear [i j]
@@ -134,6 +137,11 @@ end
 to-report func-repulsion-2 [i j]
   let diff pos-diff-of i j
   report vector-smul diff ifelse-value (r != 0) [k * exp ((-0.5 * ((vector-len diff - d) ^ 2)) / (r ^ 2))] [0]
+end
+
+to-report func-sin [i j]
+  let diff pos-diff-of i j
+  report vector-smul diff ifelse-value (d != 0) [((k) * abs(cos(pi * vector-len diff / d)))] [0]
 end
 
 ;--Vector Functions---------------------------------------------------------------------------------------------------
@@ -210,7 +218,7 @@ population
 population
 0
 500
-105
+0
 1
 1
 NIL
@@ -287,9 +295,9 @@ SLIDER
 300
 k
 k
-0
+-2
 2
-0.1
+0.02
 0.01
 1
 NIL
@@ -304,7 +312,7 @@ d
 d
 0
 100
-3.1
+0.01
 0.01
 1
 NIL
@@ -319,7 +327,7 @@ delta
 delta
 0
 32
-4.6
+20.8
 0.1
 1
 NIL
@@ -332,8 +340,8 @@ CHOOSER
 258
 interaction-func
 interaction-func
-"linear" "repulsion-1" "repulsion-2"
-1
+"linear" "repulsion-1" "repulsion-2" "sin"
+3
 
 TEXTBOX
 200
@@ -445,7 +453,7 @@ random-fluctuation
 random-fluctuation
 0
 2
-2
+0.01
 0.01
 1
 NIL
