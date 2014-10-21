@@ -95,7 +95,7 @@ end
 
 to-report average-distance-to-center-of [agents]
   let center center-of agents
-  report ifelse-value (count agents != 0)[(sum [vector-len (torus-distance (list xcor ycor) center)] of agents) / count agents] [0]
+  report ifelse-value (count agents != 0)[(sum [vector-len (torus-relative-pos (list xcor ycor) center)] of agents) / count agents] [0]
 end
 
 to-report average-distance-to-each-other-of [agents]
@@ -156,13 +156,13 @@ to-report pos-of [a]
   report [list xcor ycor] of a
 end
 
-to-report torus-distance [p1 p2]
+to-report torus-relative-pos [p1 p2]
 ;  let world-size list world-width world-height
   report vector-sub p1 p2
 end
 
 to-report pos-diff-of [a1 a2]
-  report torus-distance (pos-of a1) (pos-of a2)
+  report torus-relative-pos (pos-of a1) (pos-of a2)
 end
 
 ;--Vector Functions---------------------------------------------------------------------------------------------------
