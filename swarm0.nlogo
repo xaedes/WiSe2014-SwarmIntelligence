@@ -86,12 +86,21 @@ to update-center-marker
 end
 
 ;--Swarm Statistics---------------------------------------------------------------------------------------------------
+to-report unwrap-position [pivot agent]
+  report vector-add (pos-of pivot) (torus-relative-pos-of agent pivot)
+end
+to-report unwrapped-positions-of [agents]
+  let pivot one-of agents
+  report [unwrap-position pivot self] of agents
+end
+
 to-report center-of [agents]
+  let ps unwrapped-positions-of agents
   report ifelse-value (count agents != 0)
-    [vector-smul (vectors-sum ([pos-of self] of agents))
-      (1 / count agents)]
+    [vector-smul (vectors-sum ps) (1 / count agents)]
     [list 0 0]
 end
+
 
 to-report average-distance-to-center-of [agents]
   let center center-of agents
@@ -102,7 +111,7 @@ to-report average-distance-to-each-other-of [agents]
   let n count particles
   let particle_list [self] of particles
 
-  report ifelse-value ((n ^ 2 - n) != 0) [(1 / (n ^ 2 - n)) * (sum (map [vector-len pos-diff-of (item 0 ?) (item 1 ?)] (combinations (list particle_list particle_list))))][0]
+  report ifelse-value ((n ^ 2 - n) != 0) [(1 / (n ^ 2 - n)) * (sum (map [vector-len torus-relative-pos-of (item 0 ?) (item 1 ?)] (combinations (list particle_list particle_list))))][0]
 end
 
 ;--Swarm Behaviour Functions------------------------------------------------------------------------------------------
@@ -115,23 +124,23 @@ to-report func [i j]
 end
 
 to-report func-linear [i j]
-  let diff pos-diff-of i j
+  let diff torus-relative-pos-of i j
   report vector-smul diff (- k) 
 end
 
 
 to-report func-repulsion-1 [i j]
-  let diff pos-diff-of i j
+  let diff torus-relative-pos-of i j
   report vector-smul diff ((- k) * (vector-len diff - d))
 end
   
 to-report func-repulsion-2 [i j]
-  let diff pos-diff-of i j
+  let diff torus-relative-pos-of i j
   report vector-smul diff ifelse-value (r != 0) [k * exp ((-0.5 * ((vector-len diff - d) ^ 2)) / (r ^ 2))] [0]
 end
 
 to-report func-sin [i j]
-  let diff pos-diff-of i j
+  let diff torus-relative-pos-of i j
   report vector-smul diff ifelse-value (d != 0) [((k) * abs(cos(pi * vector-len diff / d)))] [0]
 end
 
@@ -156,12 +165,18 @@ to-report pos-of [a]
   report [list xcor ycor] of a
 end
 
-to-report torus-relative-pos [p1 p2]
-;  let world-size list world-width world-height
-  report vector-sub p1 p2
+to-report wrap-correct [v]
+  let wrap-correction list (round(item 0 v / world-width) * world-width) 
+                           (round(item 1 v / world-height) * world-height)
+  report vector-sub v wrap-correction
+  
 end
 
-to-report pos-diff-of [a1 a2]
+to-report torus-relative-pos [p1 p2]
+  report wrap-correct vector-sub p1 p2
+end
+
+to-report torus-relative-pos-of [a1 a2]
   report torus-relative-pos (pos-of a1) (pos-of a2)
 end
 
@@ -188,7 +203,6 @@ to-report vector-len [v]
 end
 
 to-report vectors-sum [vs]
-  
   report ifelse-value (length vs > 0)
          [reduce vector-add vs]
          [list 0 0]
@@ -339,7 +353,7 @@ delta
 delta
 0
 32
-27.1
+32
 0.1
 1
 NIL
