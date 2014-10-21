@@ -47,14 +47,6 @@ to go
     ]
   ]
   ask particles [
-    ; calculate x(t+1)
-    let nx xcor + vx * global-speed
-    let ny ycor + vy * global-speed
-    
-    ; update position and direction
-    facexy nx ny
-    setxy nx ny
-    
     ; calculate f
     let others [self] of other particles in-radius delta
     let f vectors-sum map [func self ?] others
@@ -62,13 +54,21 @@ to go
     set fy last f
 
     ; calculate v(t+1)
-    let nvx vx * friction + fx
-    let nvy vy * friction + fy
+    let nvx vx * friction + fx + random-fluctuation * (random-float 1 - 0.5)
+    let nvy vy * friction + fy + random-fluctuation * (random-float 1 - 0.5)
 
     
     ; set v(t+1)
     set vx nvx
     set vy nvy
+
+    ; calculate x(t+1)
+    let nx xcor + vx * global-speed 
+    let ny ycor + vy * global-speed 
+    
+    ; update position and direction
+    facexy nx ny
+    setxy nx ny
   ]
 
   
@@ -209,8 +209,8 @@ SLIDER
 population
 population
 0
-100
-27
+500
+105
 1
 1
 NIL
@@ -259,7 +259,7 @@ global-speed
 global-speed
 0
 0.05
-0.0050
+0.04
 0.001
 1
 NIL
@@ -289,7 +289,7 @@ k
 k
 0
 2
-0.41
+0.1
 0.01
 1
 NIL
@@ -304,7 +304,7 @@ d
 d
 0
 100
-8.92
+3.1
 0.01
 1
 NIL
@@ -318,8 +318,8 @@ SLIDER
 delta
 delta
 0
-100
-100
+32
+4.6
 0.1
 1
 NIL
@@ -384,7 +384,7 @@ r
 r
 0
 100
-9.5
+49.5
 0.5
 1
 NIL
@@ -419,9 +419,9 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot average-distance-to-center-of particles"
 
 PLOT
-920
+882
 13
-1451
+1413
 379
 average-distance-to-each-other-of particles
 NIL
@@ -435,6 +435,21 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot average-distance-to-each-other-of particles"
+
+SLIDER
+200
+130
+372
+163
+random-fluctuation
+random-fluctuation
+0
+2
+2
+0.01
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
