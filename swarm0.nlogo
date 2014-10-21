@@ -96,7 +96,7 @@ to-report average-distance-to-each-other-of [agents]
   let n count particles
   let particle_list [self] of particles
 
-  report (1 / (n ^ 2 - n)) * (sum (map [vector-len pos-diff-of (item 0 ?) (item 1 ?)] (combinations (list particle_list particle_list))))
+  report ifelse-value ((n ^ 2 - n) != 0) [(1 / (n ^ 2 - n)) * (sum (map [vector-len pos-diff-of (item 0 ?) (item 1 ?)] (combinations (list particle_list particle_list))))][0]
 end
 
 ;https://groups.yahoo.com/neo/groups/netlogo-users/conversations/topics/10032
@@ -180,7 +180,6 @@ to-report vectors-sum [vs]
          [reduce vector-add vs]
          [list 0 0]
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 432
@@ -218,7 +217,7 @@ population
 population
 0
 500
-0
+2
 1
 1
 NIL
@@ -267,7 +266,7 @@ global-speed
 global-speed
 0
 0.05
-0.04
+0.039
 0.001
 1
 NIL
@@ -327,7 +326,7 @@ delta
 delta
 0
 32
-20.8
+27.1
 0.1
 1
 NIL
@@ -341,7 +340,7 @@ CHOOSER
 interaction-func
 interaction-func
 "linear" "repulsion-1" "repulsion-2" "sin"
-3
+2
 
 TEXTBOX
 200
