@@ -153,7 +153,7 @@ end
 
 ;--Torus Geometrical Functions----------------------------------------------------------------------------------------
 to-report pos-of [a]
-  report list ([xcor] of a) ([ycor] of a)
+  report [list xcor ycor] of a
 end
 
 to-report torus-distance [p1 p2]
