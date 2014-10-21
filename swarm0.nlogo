@@ -25,6 +25,13 @@ to setup
     set color yellow
   ]
   
+  create-markers 1 [
+    set hidden? true
+    setxy mouse-xcor mouse-ycor
+    set purpose "mouse"
+    set color red
+  ]
+  
   reset-ticks
 end
 
@@ -38,6 +45,7 @@ to add-particles [n]
   ]
 end
 
+
 ;--Swarm Behaviour------------------------------------------------------------------------------------------
 to go
   if count particles < population [
@@ -48,6 +56,18 @@ to go
       die
     ]
   ]
+
+  ifelse mouse-interaction? [
+    ask markers with [purpose = "mouse"] [
+      set hidden? false
+      if mouse-down? [
+        set xcor mouse-xcor
+        set ycor mouse-ycor
+      ]
+    ]
+  ][
+    ask markers with [purpose = "mouse"] [set hidden? true]
+  ]
   
   ask particles [
     ; calculate f
@@ -55,7 +75,7 @@ to go
     let f-swarm-interaction vectors-sum [func interaction-func k-i d-i r-i me self] of other particles in-radius delta-i
 
     let f (list f-swarm-interaction)
-    let mouse list mouse-xcor mouse-ycor
+    let mouse one-of markers with [purpose = "mouse"] 
     if (mouse-interaction? and vector-len torus-relative-pos-of me mouse <= delta-m) [
       let f-mouse-interaction (func mouse-func k-m d-m r-m me mouse)
       set f fput f-mouse-interaction f
